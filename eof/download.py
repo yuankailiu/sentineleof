@@ -256,7 +256,10 @@ def find_scenes_to_download(search_path="./", save_dir="./"):
         if parsed_file.start_time in orbit_dts:
             # start_time is a datetime, already found
             continue
-        if any(parsed_file.start_time in orbit for orbit in current_eofs):
+        if any(
+            parsed_file.start_time in orbit and orbit.mission == parsed_file.mission
+            for orbit in current_eofs
+        ):
             logger.info(
                 "Skipping {}, already have EOF file".format(
                     os.path.splitext(parsed_file.filename)[0]
