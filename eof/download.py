@@ -250,11 +250,14 @@ def find_scenes_to_download(search_path="./", save_dir="./"):
     missions = []
     # Check for already-downloaded orbit files, skip ones we have
     current_eofs = find_current_eofs(save_dir)
+    # Keyed on the mission as well: POEORB validity windows are day-aligned
+    # identically for every S1 platform, so a start time alone does not say
+    # which scene's orbit has already been accounted for.
+    scenes_found = set()
 
     # Now loop through each Sentinel scene in search_path
     for parsed_file in find_unique_safes(search_path):
-        if parsed_file.start_time in orbit_dts:
-            # start_time is a datetime, already found
+        if (parsed_file.start_time, parsed_file.mission) in scenes_found:
             continue
         if any(
             parsed_file.start_time in orbit and orbit.mission == parsed_file.mission
@@ -272,6 +275,7 @@ def find_scenes_to_download(search_path="./", save_dir="./"):
                 parsed_file.mission, parsed_file.start_time.strftime("%Y-%m-%d")
             )
         )
+        scenes_found.add((parsed_file.start_time, parsed_file.mission))
         orbit_dts.append(parsed_file.start_time)
         missions.append(parsed_file.mission)
 
